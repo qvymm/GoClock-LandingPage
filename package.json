@@ -1,0 +1,27 @@
+{
+  "name": "goclock-landingpage",
+  "version": "1.0.0",
+  "description": "GoClock Landing Page - Student lifestyle management app",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild analytics.js --bundle --format=iife --outfile=dist/analytics.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qvymm/GoClock-LandingPage.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/qvymm/GoClock-LandingPage/issues"
+  },
+  "homepage": "https://github.com/qvymm/GoClock-LandingPage#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
