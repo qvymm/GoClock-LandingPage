@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GõClock – Học tập, giấc ngủ và dinh dưỡng cho sinh viên</title>
+<meta name="description" content="GõClock là ứng dụng quản lý lối sống cho sinh viên: lịch học và deadline, giờ ngủ và báo thức, bữa ăn và calo, tất cả trong một dashboard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F7EA; --surface:#FFFFFF; --surface2:#E4EEDA; --ink:#0F2A1E; --muted:#4D6957;
+  --line:rgba(15,42,30,.14); --btn:#0F2A1E; --btn-ink:#C8F135; --mark:#2F6B1F;
+  --p-bg:#0B2218; --p-card:#143627; --p-card2:#1B4533; --p-ink:#EAF4E3; --p-muted:#8FB19C; --lime:#C8F135; --red:#FF6B5B;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B2218; --surface:#123324; --surface2:#19412F; --ink:#EAF4E3; --muted:#93B5A0;
+    --line:rgba(234,244,227,.14); --btn:#C8F135; --btn-ink:#0B2218; --mark:#C8F135;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B2218; --surface:#123324; --surface2:#19412F; --ink:#EAF4E3; --muted:#93B5A0;
+  --line:rgba(234,244,227,.14); --btn:#C8F135; --btn-ink:#0B2218; --mark:#C8F135;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 76px);scroll-behavior:smooth;height:auto}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img,svg{max-width:100%}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+:focus-visible{outline:3px solid var(--mark);outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:24px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em}
+.logo-mark{width:38px;height:36px;border-radius:10px;overflow:hidden;background:#083D1F;flex:none}
+.logo-mark img{display:block;width:100%;height:100%}
+.nav-links{display:flex;gap:28px;margin-left:auto;font-weight:500;font-size:15px;color:var(--muted)}
+.nav-links a:hover{color:var(--ink)}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;padding:2px}
+.lang button{font:inherit;font-size:13px;font-weight:600;border:0;background:none;color:var(--muted);padding:4px 12px;border-radius:999px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-weight:700;border-radius:999px;padding:12px 24px;background:var(--btn);color:var(--btn-ink);border:2px solid var(--btn);cursor:pointer;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.small{padding:8px 18px;font-size:14px}
+@media (max-width:820px){.nav-links{display:none}.nav .lang{margin-left:auto}}
+
+.hero{padding:64px 0 72px;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+.pill{display:inline-block;font-size:14px;font-weight:600;padding:6px 14px;border-radius:999px;background:var(--surface2);color:var(--ink);margin-bottom:20px}
+h1{font-size:clamp(40px,6vw,68px);line-height:1.08;letter-spacing:-.035em;margin:0 0 20px;font-weight:800}
+h1 span{display:block}
+.lead{font-size:18px;color:var(--muted);max-width:52ch;margin:0 0 32px}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:40px;max-width:520px}
+.pillar{border-top:3px solid var(--ink);padding-top:10px;font-size:14px;color:var(--muted)}
+.pillar b{display:block;color:var(--ink);font-size:16px}
+.pillar:nth-child(2){border-color:var(--mark)}
+.pillar:nth-child(3){border-color:var(--muted)}
+@media (max-width:900px){.hero .wrap{grid-template-columns:1fr}.hero{padding-top:40px}}
+
+.stage{position:relative;display:grid;place-items:center;padding:12px 0}
+.phone{width:290px;border-radius:44px;background:#04120B;padding:9px;box-shadow:0 30px 60px -20px rgba(8,30,18,.55)}
+.screen{background:var(--p-bg);color:var(--p-ink);border-radius:36px;padding:20px 16px 18px;min-height:560px;font-size:13px;line-height:1.4}
+.screen small{color:var(--p-muted)}
+.top{display:flex;justify-content:space-between;align-items:center}
+.bell{position:relative;width:34px;height:34px;border-radius:50%;background:var(--p-card);display:grid;place-items:center}
+.bell i{position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;font-style:normal;font-size:10px;font-weight:700;border-radius:99px;min-width:16px;height:16px;display:grid;place-items:center}
+.clock{font-size:46px;font-weight:800;letter-spacing:-.04em;line-height:1;margin:14px 0 2px;color:var(--lime);font-variant-numeric:tabular-nums}
+.card{background:var(--p-card);border-radius:18px;padding:12px 14px;margin-top:10px}
+.card b{font-weight:700}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.bar{height:6px;border-radius:99px;background:var(--p-card2);margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--lime);border-radius:99px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two .card{margin-top:10px}
+.big{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.dl{background:var(--lime);color:#0B2218}
+.dl small{color:#35511f}
+.chip{position:absolute;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:10px 14px;font-size:13px;font-weight:600;box-shadow:0 14px 30px -14px rgba(8,30,18,.4);display:flex;gap:10px;align-items:center}
+.chip small{display:block;color:var(--muted);font-weight:500}
+.chip .dot{width:30px;height:30px;border-radius:50%;background:var(--p-bg);display:grid;place-items:center;flex:none}
+.chip.c1{left:-8px;top:90px;animation:bob 6s ease-in-out infinite}
+.chip.c2{right:-8px;bottom:80px;animation:bob 6s ease-in-out -3s infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+@media (max-width:520px){.chip.c1{left:0;top:-4px}.chip.c2{right:0;bottom:-4px}}
+
+section{padding:88px 0}
+.eyebrow{font-size:15px;font-weight:700;color:var(--mark);margin:0 0 10px}
+h2{font-size:clamp(30px,4.2vw,46px);line-height:1.12;letter-spacing:-.03em;margin:0 0 16px;font-weight:800}
+.sub{color:var(--muted);max-width:60ch;margin:0 0 44px;font-size:17px}
+
+.features{background:var(--surface2)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.fcard{background:var(--bg);border:1px solid var(--line);border-radius:28px;padding:30px}
+.fcard:nth-child(1){border-radius:28px 28px 28px 8px}
+.fcard:nth-child(4){border-radius:8px 28px 28px 28px}
+.ftag{display:inline-block;font-size:13px;font-weight:700;padding:4px 12px;border-radius:99px;background:var(--btn);color:var(--btn-ink)}
+.fcard h3{font-size:24px;letter-spacing:-.02em;margin:16px 0 8px}
+.fcard p{margin:0 0 18px;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tags span{font-size:13px;font-weight:500;border:1px solid var(--line);padding:4px 12px;border-radius:99px}
+
+.show{display:grid;grid-template-columns:1fr 1.1fr;gap:48px;align-items:center}
+@media (max-width:900px){.show{grid-template-columns:1fr}}
+.tabs{display:grid;gap:12px}
+.tab{font:inherit;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:20px;padding:16px 20px;cursor:pointer;transition:border-color .15s,transform .15s}
+.tab b{display:block;font-size:18px}
+.tab span{color:var(--muted);font-size:14px}
+.tab[aria-selected="true"]{border-color:var(--ink);border-width:2px;padding:15px 19px;transform:translateX(6px)}
+.panel{display:none}
+.panel.on{display:block}
+.show .phone{margin:0 auto}
+.show .screen{min-height:480px}
+.h-title{font-size:18px;font-weight:800;margin:14px 0 2px}
+.task{display:flex;gap:10px;align-items:center;background:var(--p-card);border-radius:16px;padding:10px 12px;margin-top:8px}
+.cb{width:18px;height:18px;border-radius:6px;border:2px solid var(--p-muted);flex:none;position:relative}
+.cb.done{background:var(--lime);border-color:var(--lime)}
+.cb.done::after{content:"";position:absolute;left:4px;top:0;width:4px;height:9px;border:solid #0B2218;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.task .t{flex:1;min-width:0}
+.task .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task.fade{opacity:.5}
+.task.fade b{text-decoration:line-through}
+.cat{width:8px;height:8px;border-radius:50%;flex:none}
+.days{display:flex;gap:6px;margin-top:10px}
+.day{flex:1;background:var(--p-card);border-radius:12px;text-align:center;padding:6px 0;font-size:11px;color:var(--p-muted)}
+.day b{display:block;color:var(--p-ink);font-size:14px}
+.day.sel{background:var(--lime);color:#35511f}
+.day.sel b{color:#0B2218}
+.day u{display:block;width:5px;height:5px;border-radius:50%;background:var(--red);margin:2px auto 0}
+.toggle{width:34px;height:20px;border-radius:99px;background:var(--lime);position:relative;flex:none}
+.toggle::after{content:"";position:absolute;right:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#0B2218}
+.ring{width:76px;height:76px;border-radius:50%;background:conic-gradient(var(--lime) 0 62%,var(--p-card2) 0);display:grid;place-items:center;flex:none}
+.ring div{width:58px;height:58px;border-radius:50%;background:var(--p-card);display:grid;place-items:center;font-weight:800;font-size:13px;text-align:center;line-height:1.1}
+.macro{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.macro div{background:var(--p-card);border-radius:14px;padding:8px;text-align:center}
+.macro b{display:block;font-size:15px}
+.scan{margin-top:10px;border:1.5px dashed var(--lime);color:var(--lime);border-radius:16px;padding:10px;text-align:center;font-weight:700}
+
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media (max-width:960px){.steps{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.steps{grid-template-columns:1fr}}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:24px}
+.num{width:40px;height:40px;border-radius:50%;background:var(--btn);color:var(--btn-ink);font-weight:800;display:grid;place-items:center;margin-bottom:14px}
+.step h3{margin:0 0 6px;font-size:18px;line-height:1.3}
+.step p{margin:0;color:var(--muted);font-size:15px}
+.day-plan{margin-top:40px;background:var(--p-bg);color:var(--p-ink);border-radius:28px;padding:28px}
+.day-plan h3{margin:0 0 4px;font-size:20px}
+.day-plan>p{margin:0 0 20px;color:var(--p-muted);font-size:14px}
+.tl{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;list-style:none;margin:0;padding:0}
+.tl li{border-top:2px solid var(--lime);padding-top:10px;font-size:14px;color:var(--p-muted)}
+.tl b{display:block;color:var(--lime);font-size:20px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+@media (max-width:860px){.tl{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.tl{grid-template-columns:1fr}}
+
+/* pricing */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch}
+@media (max-width:900px){.plans{grid-template-columns:1fr}}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:30px;display:flex;flex-direction:column;position:relative}
+.plan.hot{background:var(--p-bg);color:var(--p-ink);border-color:var(--p-bg)}
+.badge{position:absolute;top:-13px;right:24px;background:var(--lime);color:#0B2218;font-size:13px;font-weight:800;padding:4px 14px;border-radius:99px}
+.plan h3{margin:0 0 4px;font-size:22px}
+.plan .desc{margin:0 0 18px;color:var(--muted);font-size:15px}
+.plan.hot .desc{color:var(--p-muted)}
+.price{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.1;font-variant-numeric:tabular-nums}
+.price small{font-size:15px;font-weight:500;color:var(--muted);letter-spacing:0}
+.plan.hot .price{color:var(--lime)}
+.plan.hot .price small{color:var(--p-muted)}
+.save{font-size:13px;color:var(--mark);font-weight:600;min-height:20px;margin:2px 0 18px}
+.plan.hot .save{color:var(--lime)}
+.plan ul{list-style:none;margin:0 0 24px;padding:0;display:grid;gap:10px;font-size:15px;flex:1;align-content:start}
+.plan li::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mark);margin-right:10px}
+.plan.hot li::before{background:var(--lime)}
+.plan.hot .btn{background:var(--lime);border-color:var(--lime);color:#0B2218}
+.note{margin:24px 0 0;color:var(--muted);font-size:14px;text-align:center}
+
+.final{padding-top:24px}
+.final-box{background:var(--p-bg);color:var(--p-ink);border-radius:36px;padding:64px 28px;text-align:center}
+.final-box h2{margin-left:auto;margin-right:auto;max-width:18ch}
+.final-box p{color:var(--p-muted);max-width:52ch;margin:0 auto 28px;font-size:17px}
+.final-box .btn{background:var(--lime);border-color:var(--lime);color:#0B2218}
+.checks{display:flex;gap:10px 24px;justify-content:center;flex-wrap:wrap;margin-top:24px;font-size:14px;color:var(--p-muted)}
+.checks span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--lime);margin-right:8px}
+
+footer{border-top:1px solid var(--line);padding:56px 0 32px}
+.fgrid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px}
+@media (max-width:760px){.fgrid{grid-template-columns:1fr 1fr}.fgrid>div:first-child{grid-column:1/-1}}
+footer h4{margin:0 0 12px;font-size:15px}
+footer ul{list-style:none;margin:0;padding:0;display:grid;gap:8px;color:var(--muted);font-size:15px}
+footer ul a:hover{color:var(--ink)}
+footer p{color:var(--muted);margin:12px 0 0;max-width:34ch;font-size:15px}
+.copy{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="GõClock">
+      <span class="logo-mark"><img src="data:image/png;base64,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" alt=""></span>
+      GõClock
+    </a>
+    <nav class="nav-links" aria-label="Chính">
+      <a href="#features" data-en="Features">Tính năng</a>
+      <a href="#preview" data-en="Preview">Xem thử</a>
+      <a href="#how" data-en="How it works">Cách hoạt động</a>
+      <a href="#pricing" data-en="Pricing">Bảng giá</a>
+      <a href="#download" data-en="Download">Tải về</a>
+    </nav>
+    <div class="lang" role="group" aria-label="Ngôn ngữ">
+      <button type="button" data-lang="vi" aria-pressed="true">VI</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <a class="btn small" href="#download" data-en="Get the app">Tải ứng dụng</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <span class="pill" data-en="Lifestyle app for students">Ứng dụng quản lý lối sống cho sinh viên</span>
+        <h1 data-en="<span>Study on time.</span><span>Sleep enough.</span><span>Eat well.</span>"><span>Học đúng giờ.</span><span>Ngủ đủ giấc.</span><span>Ăn đủ bữa.</span></h1>
+        <p class="lead" data-en="GõClock keeps your schedule, deadlines, bedtime and meals in one app, with reminders at the right moment and a dashboard that shows how your day is going.">GõClock gom lịch trình, deadline, giờ ngủ và bữa ăn vào một ứng dụng, nhắc bạn đúng lúc và cho bạn thấy ngày hôm nay đang đi đến đâu.</p>
+        <div class="cta-row">
+          <a class="btn" href="#download" data-en="Download GõClock">Tải GõClock</a>
+          <a class="btn ghost" href="#pricing" data-en="See pricing">Xem bảng giá</a>
+        </div>
+        <div class="pillars">
+          <div class="pillar"><b>Study</b><span data-en="Schedule and deadlines">Lịch trình, deadline</span></div>
+          <div class="pillar"><b>Sleep</b><span data-en="Bedtime and alarm">Giờ ngủ, báo thức</span></div>
+          <div class="pillar"><b>Nutrition</b><span data-en="Meals and calories">Bữa ăn, calo</span></div>
+        </div>
+      </div>
+
+      <div class="stage" aria-hidden="true">
+        <div class="chip c1"><span class="dot"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8F135" stroke-width="2.4" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><span>Sắp đến giờ ngủ<small>Nhắc trước 30 phút</small></span></div>
+        <div class="phone">
+          <div class="screen">
+            <div class="top"><div><small>Chào buổi sáng</small></div><div class="bell"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EAF4E3" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><i>3</i></div></div>
+            <div class="clock" id="clock">07:42</div>
+            <small>Thứ Hai, hôm nay</small>
+            <div class="card">
+              <div class="row"><b>Công việc hôm nay</b><span>3/5</span></div>
+              <div class="bar"><i style="width:60%"></i></div>
+            </div>
+            <div class="two">
+              <div class="card"><small>Calo</small><div class="big">1.240</div><small>/ 2.000 kcal</small></div>
+              <div class="card"><small>Giấc ngủ</small><div class="big">7g 30p</div><small>Mục tiêu 8 giờ</small></div>
+            </div>
+            <div class="card dl">
+              <small>Deadline gần nhất</small>
+              <div class="row"><b>Nộp báo cáo nhóm</b><b>05:12:30</b></div>
+            </div>
+            <div class="task"><span class="cb done"></span><span class="t"><b>Ôn bài Giải tích</b></span><small>08:00</small></div>
+            <div class="task"><span class="cb"></span><span class="t"><b>Họp nhóm đồ án</b></span><small>14:00</small></div>
+          </div>
+        </div>
+        <div class="chip c2"><span class="dot"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8F135" stroke-width="2.4" stroke-linecap="round"><path d="M7 3v8a3 3 0 0 0 3 3v7M4 3v6M10 3v6M17 21V3c-2.5 1-4 4-4 8h4"/></svg></span><span>Giờ ăn trưa<small>12:00</small></span></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="features" class="features">
+    <div class="wrap">
+      <p class="eyebrow" data-en="Features">Tính năng</p>
+      <h2 data-en="Everything a student's day needs">Mọi thứ một ngày của sinh viên cần</h2>
+      <p class="sub" data-en="Three habit groups, one dashboard. GõClock helps you plan, rest and eat on schedule, instead of juggling several apps.">Ba nhóm thói quen, một dashboard. GõClock giúp bạn học, nghỉ và ăn uống theo kế hoạch, thay vì phải dùng nhiều ứng dụng rời rạc.</p>
+      <div class="grid2">
+        <article class="fcard">
+          <span class="ftag">Study</span>
+          <h3 data-en="Study management">Quản lý học tập</h3>
+          <p data-en="Put your schedule, tasks and deadlines in one place. Get reminded before something is due, so you don't have to keep it all in your head.">Đưa lịch trình, nhiệm vụ và deadline vào một chỗ. Được nhắc trước khi đến hạn để bạn không phải nhớ hết trong đầu.</p>
+          <div class="tags"><span data-en="Schedule">Lịch trình</span><span data-en="Tasks and deadlines">Nhiệm vụ, deadline</span><span data-en="Reminders">Nhắc nhở</span><span data-en="Progress tracking">Theo dõi tiến độ</span></div>
+        </article>
+        <article class="fcard">
+          <span class="ftag">Sleep</span>
+          <h3 data-en="Sleep management">Quản lý giấc ngủ</h3>
+          <p data-en="Set your bedtime, wake-up time and target sleep duration. GõClock reminds you 30 minutes before bed and wakes you with the sound you picked.">Đặt giờ đi ngủ, giờ thức dậy và số giờ ngủ mục tiêu. GõClock nhắc bạn trước giờ ngủ 30 phút và gọi bạn dậy bằng âm thanh bạn chọn.</p>
+          <div class="tags"><span data-en="Bedtime and wake-up">Giờ ngủ, giờ dậy</span><span data-en="Sleep goal">Mục tiêu giờ ngủ</span><span data-en="30-minute reminder">Nhắc trước 30 phút</span><span data-en="Alarm sounds">Chuông báo thức</span></div>
+        </article>
+        <article class="fcard">
+          <span class="ftag">Nutrition</span>
+          <h3 data-en="Nutrition management">Quản lý dinh dưỡng</h3>
+          <p data-en="Get meal reminders, log what you eat and see your nutrition for the day. Scan a photo of a dish to recognize its calories.">Nhắc đúng giờ ăn, ghi lại từng bữa và xem thông tin dinh dưỡng trong ngày. Quét ảnh món ăn để nhận diện calo.</p>
+          <div class="tags"><span data-en="Meal reminders">Nhắc giờ ăn</span><span data-en="Meal log">Ghi nhận bữa ăn</span><span data-en="Photo calorie scan">Quét calo từ ảnh</span><span data-en="Daily nutrition">Dinh dưỡng trong ngày</span></div>
+        </article>
+        <article class="fcard">
+          <span class="ftag">Dashboard</span>
+          <h3 data-en="Daily overview">Tổng quan trong ngày</h3>
+          <p data-en="Your schedule, activities, statistics and progress come together on one screen, so you can see how your plan is going.">Lịch trình, hoạt động, thống kê và tiến độ gom về một màn hình, để bạn biết kế hoạch của mình đang thực hiện đến đâu.</p>
+          <div class="tags"><span data-en="Schedule and activities">Lịch trình, hoạt động</span><span data-en="Statistics">Thống kê</span><span data-en="Progress">Tiến độ</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="preview">
+    <div class="wrap">
+      <p class="eyebrow" data-en="Preview">Xem thử</p>
+      <h2 data-en="Pick a habit to look at">Chọn một thói quen để xem</h2>
+      <p class="sub" data-en="Each group has its own screen, built to be read in a few seconds between classes.">Mỗi nhóm chức năng có màn hình riêng, đủ gọn để đọc trong vài giây giữa hai tiết học.</p>
+      <div class="show">
+        <div class="tabs" role="tablist" aria-label="Chức năng">
+          <button class="tab" role="tab" aria-selected="true" aria-controls="p-study" id="t-study"><b>Study</b><span data-en="Tasks sorted by nearest deadline, with a live countdown.">Việc cần làm xếp theo deadline gần nhất, có đếm ngược.</span></button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="p-sleep" id="t-sleep"><b>Sleep</b><span data-en="Bedtime, wake-up time, sleep goal and alarm sound.">Giờ ngủ, giờ dậy, mục tiêu giờ ngủ và âm báo thức.</span></button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="p-nutri" id="t-nutri"><b>Nutrition</b><span data-en="Meals of the day, calories and macros, plus photo scan.">Bữa ăn trong ngày, calo, chất dinh dưỡng và quét ảnh.</span></button>
+        </div>
+
+        <div class="phone" aria-live="polite">
+          <div class="screen panel on" id="p-study" role="tabpanel" aria-labelledby="t-study">
+            <div class="h-title">Công việc</div><small>Hôm nay, 3 việc cần làm</small>
+            <div class="days">
+              <div class="day">T2<b>12</b></div>
+              <div class="day sel">T3<b>13</b></div>
+              <div class="day">T4<b>14</b><u></u></div>
+              <div class="day">T5<b>15</b></div>
+              <div class="day">T6<b>16</b><u></u></div>
+            </div>
+            <div class="task"><span class="cb"></span><span class="t"><b>Nộp báo cáo nhóm</b><small>17:00 · còn 05:12:30</small></span><span class="cat" style="background:#FF6B5B"></span></div>
+            <div class="task"><span class="cb"></span><span class="t"><b>Làm bài tập Xác suất</b><small>20:00 · còn 08:12:30</small></span><span class="cat" style="background:#C8F135"></span></div>
+            <div class="task"><span class="cb"></span><span class="t"><b>Đọc chương 4 Kinh tế vi mô</b><small>21:30</small></span><span class="cat" style="background:#7FD3B5"></span></div>
+            <div class="h-title" style="font-size:14px;margin-top:18px">Đã hoàn thành</div>
+            <div class="task fade"><span class="cb done"></span><span class="t"><b>Ôn bài Giải tích</b><small>08:00</small></span><span class="cat" style="background:#C8F135"></span></div>
+          </div>
+          <div class="screen panel" id="p-sleep" role="tabpanel" aria-labelledby="t-sleep">
+            <div class="h-title">Giấc ngủ</div><small>Lịch ngủ của bạn</small>
+            <div class="two">
+              <div class="card"><small>Đi ngủ</small><div class="big">23:00</div></div>
+              <div class="card"><small>Thức dậy</small><div class="big">07:00</div></div>
+            </div>
+            <div class="card"><div class="row"><b>Mục tiêu giờ ngủ</b><span class="big" style="font-size:16px">8 giờ</span></div><div class="bar"><i style="width:94%"></i></div><small>Tuần này bạn ngủ trung bình 7g 30p</small></div>
+            <div class="card"><div class="row"><span><b>Nhắc trước giờ ngủ</b><br><small>30 phút, lúc 22:30</small></span><span class="toggle"></span></div></div>
+            <div class="card"><div class="row"><span><b>Chuông báo thức</b><br><small>Âm thanh: Bình minh</small></span><span class="toggle"></span></div></div>
+          </div>
+          <div class="screen panel" id="p-nutri" role="tabpanel" aria-labelledby="t-nutri">
+            <div class="h-title">Dinh dưỡng</div><small>Hôm nay</small>
+            <div class="card row"><div class="ring"><div>1.240<br>kcal</div></div><div style="flex:1"><b>Còn lại 760 kcal</b><br><small>Mục tiêu 2.000 kcal</small></div></div>
+            <div class="macro"><div><small>Đạm</small><b>62g</b></div><div><small>Tinh bột</small><b>148g</b></div><div><small>Chất béo</small><b>38g</b></div></div>
+            <div class="task"><span class="t"><b>Bữa sáng · Bánh mì trứng</b><small>07:30</small></span><b>320</b></div>
+            <div class="task"><span class="t"><b>Bữa trưa · Cơm gà</b><small>12:15</small></span><b>650</b></div>
+            <div class="scan">Quét ảnh món ăn</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="features">
+    <div class="wrap">
+      <p class="eyebrow" data-en="How it works">Cách hoạt động</p>
+      <h2 data-en="As simple as four steps">Đơn giản như bốn bước</h2>
+      <p class="sub" data-en="Set things up once, then let reminders do the nudging.">Thiết lập một lần, sau đó để nhắc nhở lo phần còn lại.</p>
+      <div class="steps">
+        <div class="step"><div class="num">1</div><h3 data-en="Add your schedule and tasks">Thêm lịch học và việc cần làm</h3><p data-en="Enter classes, assignments and deadlines. Turn on reminders for the important ones.">Nhập lịch trình, bài tập và deadline. Bật nhắc nhở cho việc quan trọng.</p></div>
+        <div class="step"><div class="num">2</div><h3 data-en="Set bedtime and alarm">Đặt giờ ngủ và báo thức</h3><p data-en="Choose bedtime, wake-up time, sleep goal and your alarm sound.">Chọn giờ đi ngủ, giờ thức dậy, số giờ ngủ mục tiêu và âm báo thức.</p></div>
+        <div class="step"><div class="num">3</div><h3 data-en="Log your meals">Ghi lại bữa ăn</h3><p data-en="Set meal times and log each meal, or scan a photo to recognize calories.">Đặt giờ ăn và ghi từng bữa, hoặc quét ảnh món ăn để nhận diện calo.</p></div>
+        <div class="step"><div class="num">4</div><h3 data-en="Check the dashboard daily">Xem dashboard mỗi ngày</h3><p data-en="Follow your progress and statistics, then adjust your plan.">Theo dõi tiến độ và thống kê để điều chỉnh kế hoạch của bạn.</p></div>
+      </div>
+
+      <div class="day-plan">
+        <h3 data-en="A sample day with GõClock">Một ngày mẫu với GõClock</h3>
+        <p data-en="Illustrative times. You choose your own.">Giờ giấc chỉ để minh họa, bạn tự chọn giờ của mình.</p>
+        <ol class="tl">
+          <li><b>07:00</b><span data-en="Alarm rings">Chuông báo thức</span></li>
+          <li><b>09:00</b><span data-en="Class schedule">Lịch học</span></li>
+          <li><b>12:00</b><span data-en="Lunch reminder">Nhắc giờ ăn trưa</span></li>
+          <li><b>17:00</b><span data-en="Deadline due">Đến hạn nộp bài</span></li>
+          <li><b>22:30</b><span data-en="Wind-down reminder">Nhắc chuẩn bị đi ngủ</span></li>
+          <li><b>23:00</b><span data-en="Bedtime">Giờ đi ngủ</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="wrap">
+      <p class="eyebrow" data-en="Pricing">Bảng giá</p>
+      <h2 data-en="Start free, upgrade when you need more">Dùng miễn phí, nâng cấp khi cần</h2>
+      <p class="sub" data-en="Pick the plan that fits your semester. Cancel anytime.">Chọn gói phù hợp với học kỳ của bạn. Hủy bất cứ lúc nào.</p>
+      <div class="plans">
+        <article class="plan">
+          <h3 data-en="Free">Miễn phí</h3>
+          <p class="desc" data-en="For trying out the basics.">Để làm quen với các tính năng cơ bản.</p>
+          <div class="price">0đ<small data-en="/ forever">/ mãi mãi</small></div>
+          <div class="save"></div>
+          <ul>
+            <li data-en="Schedule, tasks and deadlines">Lịch trình, nhiệm vụ, deadline</li>
+            <li data-en="1 alarm and bedtime reminder">1 báo thức và nhắc giờ ngủ</li>
+            <li data-en="Manual meal log">Ghi bữa ăn thủ công</li>
+            <li data-en="Basic daily dashboard">Dashboard ngày cơ bản</li>
+          </ul>
+          <a class="btn ghost" href="#download" data-en="Start free">Dùng miễn phí</a>
+        </article>
+        <article class="plan hot">
+          <span class="badge" data-en="Most popular">Phổ biến nhất</span>
+          <h3>Premium</h3>
+          <p class="desc" data-en="Everything for a full study routine.">Đủ mọi thứ cho một thói quen học tập trọn vẹn.</p>
+          <div class="price">49.000đ<small data-en="/ month">/ tháng</small></div>
+          <div class="save" data-en="Billed monthly">Thanh toán theo tháng</div>
+          <ul>
+            <li data-en="Everything in Free">Mọi thứ trong gói Miễn phí</li>
+            <li data-en="Photo calorie scan">Quét calo từ ảnh món ăn</li>
+            <li data-en="Unlimited alarms and sounds">Báo thức và âm thanh không giới hạn</li>
+            <li data-en="Weekly and monthly statistics">Thống kê theo tuần, theo tháng</li>
+            <li data-en="Ad-free">Không quảng cáo</li>
+          </ul>
+          <a class="btn" href="#download" data-en="Choose Premium">Chọn Premium</a>
+        </article>
+        <article class="plan">
+          <h3 data-en="Premium Year">Premium Năm</h3>
+          <p class="desc" data-en="Best value for the whole school year.">Tiết kiệm nhất cho cả năm học.</p>
+          <div class="price">399.000đ<small data-en="/ year">/ năm</small></div>
+          <div class="save" data-en="Save about 32% vs monthly">Tiết kiệm khoảng 32% so với trả theo tháng</div>
+          <ul>
+            <li data-en="All Premium features">Toàn bộ tính năng Premium</li>
+            <li data-en="Just 33.250đ per month">Chỉ khoảng 33.250đ mỗi tháng</li>
+            <li data-en="Early access to new features">Dùng thử tính năng mới sớm</li>
+          </ul>
+          <a class="btn ghost" href="#download" data-en="Choose yearly">Chọn gói năm</a>
+        </article>
+      </div>
+      <p class="note" data-en="Prices include VAT. Student discounts may apply.">Giá đã bao gồm VAT. Có thể có ưu đãi cho sinh viên.</p>
+    </div>
+  </section>
+
+  <section id="download" class="final">
+    <div class="wrap">
+      <div class="final-box">
+        <h2 data-en="Start a day with a plan">Bắt đầu một ngày có kế hoạch</h2>
+        <p data-en="Install GõClock and bring study, sleep and nutrition into one app.">Cài GõClock và gom học tập, giấc ngủ, dinh dưỡng vào một ứng dụng.</p>
+        <!-- TODO: replace href="#" with the real download link -->
+        <a class="btn" href="#" data-en="Download GõClock">Tải GõClock</a>
+        <div class="checks">
+          <span data-en="Made for students">Dành cho sinh viên</span>
+          <span data-en="Vietnamese interface">Giao diện tiếng Việt</span>
+          <span data-en="Three habits, one app">Ba thói quen, một ứng dụng</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div>
+        <a class="logo" href="#top"><span class="logo-mark"><img src="data:image/png;base64,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" alt=""></span>GõClock</a>
+        <p data-en="Lifestyle management for students: study, sleep and nutrition.">Quản lý lối sống cho sinh viên: học tập, giấc ngủ và dinh dưỡng.</p>
+      </div>
+      <div><h4 data-en="Product">Sản phẩm</h4><ul><li><a href="#features" data-en="Features">Tính năng</a></li><li><a href="#preview" data-en="Preview">Xem thử</a></li><li><a href="#how" data-en="How it works">Cách hoạt động</a></li><li><a href="#pricing" data-en="Pricing">Bảng giá</a></li><li><a href="#download" data-en="Download">Tải về</a></li></ul></div>
+      <div><h4 data-en="Support">Hỗ trợ</h4><ul><li><a href="#" data-en="Help center">Trung tâm hỗ trợ</a></li><li><a href="#" data-en="Report a bug">Báo lỗi</a></li><li><a href="#" data-en="Contact">Liên hệ</a></li></ul></div>
+      <div><h4 data-en="Legal">Pháp lý</h4><ul><li><a href="#" data-en="Privacy policy">Chính sách bảo mật</a></li><li><a href="#" data-en="Terms of use">Điều khoản sử dụng</a></li></ul></div>
+    </div>
+    <div class="copy">© 2026 GõClock</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var els=[].slice.call(document.querySelectorAll('[data-en]'));
+  els.forEach(function(e){e.setAttribute('data-vi',e.innerHTML)});
+  var btns=[].slice.call(document.querySelectorAll('[data-lang]'));
+  function setLang(l){
+    els.forEach(function(e){e.innerHTML=(l==='en')?e.getAttribute('data-en'):e.getAttribute('data-vi')});
+    document.documentElement.lang=l;
+    btns.forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-lang')===l))});
+    try{localStorage.setItem('goclock-lang',l)}catch(e){}
+  }
+  btns.forEach(function(b){b.addEventListener('click',function(){setLang(b.getAttribute('data-lang'))})});
+  try{var saved=localStorage.getItem('goclock-lang');if(saved==='en')setLang('en')}catch(e){}
+
+  var tabs=[].slice.call(document.querySelectorAll('.tab'));
+  tabs.forEach(function(t){
+    t.addEventListener('click',function(){
+      tabs.forEach(function(x){
+        var on=(x===t);
+        x.setAttribute('aria-selected',String(on));
+        document.getElementById(x.getAttribute('aria-controls')).classList.toggle('on',on);
+      });
+    });
+  });
+
+  var c=document.getElementById('clock');
+  function tick(){
+    var d=new Date();
+    c.textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+  }
+  tick();setInterval(tick,15000);
+})();
+</script>
+</body>
+</html>
