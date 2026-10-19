@@ -66,6 +66,8 @@ type SubscriptionRow = {
   expiry: string | null;
 };
 
+type LandingSourceStats = { source: string; visits: number };
+
 const ADMIN_PAGE_SIZE = 25;
 
 const analyticsCards = {
@@ -139,6 +141,34 @@ export function AdminDashboardScreen() {
   const [subscriptionPage, setSubscriptionPage] = useState(1);
   const [subscriptionSearch, setSubscriptionSearch] = useState('');
   const [selectedSubscription, setSelectedSubscription] = useState<SubscriptionRow | null>(null);
+  const [landingSources, setLandingSources] = useState<LandingSourceStats[]>([]);
+  const [landingVisits, setLandingVisits] = useState(0);
+  const [loadingLandingStats, setLoadingLandingStats] = useState(false);
+  const [landingStatsError, setLandingStatsError] = useState('');
+
+  useEffect(() => {
+    if (activeSection !== 'analytics') return;
+    let current = true;
+    async function fetchLandingStats() {
+      setLoadingLandingStats(true);
+      setLandingStatsError('');
+      const { data, error } = await supabase.rpc('get_admin_landing_page_sources', { p_days: 30 });
+      if (!current) return;
+      if (error) {
+        console.error('Unable to load landing page source analytics:', error);
+        setLandingStatsError('Không tải được thống kê. Hãy chạy migration landing page analytics trên Supabase.');
+        setLandingSources([]);
+        setLandingVisits(0);
+      } else if (data && typeof data === 'object') {
+        const result = data as { totalVisits?: number; sources?: LandingSourceStats[] };
+        setLandingVisits(Number(result.totalVisits) || 0);
+        setLandingSources(Array.isArray(result.sources) ? result.sources : []);
+      }
+      setLoadingLandingStats(false);
+    }
+    void fetchLandingStats();
+    return () => { current = false; };
+  }, [activeSection]);
 
   useEffect(() => {
     if (activeSection !== 'users') return;
@@ -572,6 +602,49 @@ export function AdminDashboardScreen() {
 
           {activeSection === 'analytics' && (
             <section className="space-y-6">
+              <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Landing page · 30 ngày gần nhất</p>
+                    <h3 className="mt-2 text-xl font-semibold text-slate-900">Khách truy cập đến từ đâu?</h3>
+                    <p className="mt-1 text-sm text-slate-500">Nguồn được nhận diện từ UTM hoặc referrer của trình duyệt.</p>
+                  </div>
+                  <div className="rounded-2xl bg-emerald-50 px-5 py-3">
+                    <p className="text-xs font-medium text-emerald-800">Tổng lượt mở</p>
+                    <p className="mt-1 text-2xl font-bold text-emerald-950">{loadingLandingStats ? '…' : landingVisits.toLocaleString('vi-VN')}</p>
+                  </div>
+                </div>
+                {landingStatsError && <p role="alert" className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">{landingStatsError}</p>}
+                {!landingStatsError && !loadingLandingStats && landingSources.length === 0 && (
+                  <p className="mt-5 rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-500">Chưa có lượt truy cập được ghi nhận trong khoảng thời gian này.</p>
+                )}
+                {landingSources.length > 0 && (
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {landingSources.map(({ source, visits }) => {
+                      const labels: Record<string, string> = {
+                        facebook: 'Facebook', tiktok: 'TikTok', instagram: 'Instagram',
+                        zalo: 'Zalo', messenger: 'Messenger', 'direct/unknown': 'Trực tiếp / chưa rõ', other: 'Nguồn khác',
+                      };
+                      const percentage = landingVisits ? Math.round(visits * 100 / landingVisits) : 0;
+                      return <div key={source} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-sm font-semibold text-slate-800">{labels[source] ?? source}</span>
+                          <span className="text-sm font-bold text-slate-900">{visits.toLocaleString('vi-VN')}</span>
+                        </div>
+                        <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+                          <div className="h-full rounded-full bg-emerald-600" style={{ width: `${percentage}%` }} />
+                        </div>
+                        <p className="mt-2 text-xs text-slate-500">{percentage}% tổng lượt mở</p>
+                      </div>;
+                    })}
+                  </div>
+                )}
+                <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-950">
+                  <p className="font-semibold">Gắn UTM vào link chiến dịch</p>
+                  <p className="mt-1 break-all text-blue-900">?utm_source=facebook&amp;utm_medium=social&amp;utm_campaign=ten_chien_dich</p>
+                  <p className="mt-1 text-xs text-blue-800">Đổi utm_source thành tiktok, instagram, zalo hoặc messenger cho từng kênh. UTM giúp phân loại chính xác hơn referrer.</p>
+                </div>
+              </div>
               <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>

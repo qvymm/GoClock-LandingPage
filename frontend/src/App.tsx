@@ -19,12 +19,17 @@ import { PremiumScreen } from './screens/PremiumScreen';
 import { TrackingScreen } from './screens/TrackingScreen';
 import { AIChatScreen } from './screens/AIChatScreen';
 import { BottomNav } from './components/BottomNav';
+import { recordLandingPageVisit } from './lib/landingAnalytics';
 
 const APP_SCREENS = ['dashboard', 'calendar', 'nutrition', 'sleep', 'profile'];
 
 function AppInner() {
   const { screen, isAdmin, setScreen } = useApp();
   const showNav = APP_SCREENS.includes(screen);
+
+  useEffect(() => {
+    void recordLandingPageVisit();
+  }, []);
 
   useEffect(() => {
     if (screen === 'adminDashboard' && !isAdmin) setScreen('login');
