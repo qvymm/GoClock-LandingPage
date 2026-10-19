@@ -1,6 +1,43 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+<script>
+  (() => {
+    const supabaseUrl = 'https://wwsnfrqebmstjuowyrwq.supabase.co';
+    const supabaseAnonKey = 'sb_publishable_Som-__jV_JeMv1eAbuk9SA_kMEe-Uue';
+    const params = new URLSearchParams(window.location.search);
+    const utmSource = (params.get('utm_source') || '').trim().toLowerCase();
+    let source = utmSource;
+    if (!source) {
+      let host = '';
+      try { host = document.referrer ? new URL(document.referrer).hostname.toLowerCase().replace(/^www\./, '') : ''; } catch {}
+      const sources = [
+        [/((^|\.)facebook\.com$|(^|\.)fb\.com$|(^|\.)fb\.me$)/, 'facebook'],
+        [/((^|\.)tiktok\.com$|(^|\.)tiktokv\.com$)/, 'tiktok'],
+        [/((^|\.)instagram\.com$)/, 'instagram'],
+        [/((^|\.)zalo\.me$|(^|\.)zalo\.vn$)/, 'zalo'],
+        [/((^|\.)messenger\.com$|(^|\.)m\.me$)/, 'messenger'],
+      ];
+      source = sources.find(([pattern]) => pattern.test(host))?.[1] || (host ? 'other' : 'direct/unknown');
+    }
+
+    fetch(`${supabaseUrl}/rest/v1/rpc/record_landing_page_visit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        p_referrer: document.referrer.slice(0, 2048) || null,
+        p_utm_source: utmSource || source,
+        p_utm_medium: params.get('utm_medium'),
+        p_utm_campaign: params.get('utm_campaign'),
+      }),
+      keepalive: true,
+    }).catch(error => console.warn('Unable to record landing page source:', error));
+  })();
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GõClock – Học tập, giấc ngủ và dinh dưỡng cho sinh viên</title>
